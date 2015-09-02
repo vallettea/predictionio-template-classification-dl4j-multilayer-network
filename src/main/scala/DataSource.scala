@@ -21,32 +21,37 @@ class DataSource(val dsp: DataSourceParams)
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    val eventsDb = Storage.getPEvents()
-    val events: Array[(String, PropertyMap)] = eventsDb.aggregateProperties(
-      appId = dsp.appId,
-      entityType = "record",
-      required = Some(List("sepal-length", "sepal-width", "petal-length", "petal-width", "species")))(sc).collect()
 
-    val features: INDArray = Nd4j.zeros(events.length, 4)
-    val labels: INDArray = Nd4j.zeros(events.length, 3)
+    // read from file
+    val textFile = sc.textFile("data/iris.data")
+    val columns = "sepal-length,sepal-width,petal-length,petal-width,species".split(",").zipWithIndex.map{ case (name,index) => name -> index }.toMap
 
-    events.zipWithIndex.foreach { case ((entityId, properties), row) =>
-      val feature = Nd4j.create(
-        Array(properties.get[Double]("sepal-length"),
-          properties.get[Double]("sepal-width"),
-          properties.get[Double]("petal-length"),
-          properties.get[Double]("petal-width")
+    val features: INDArray = Nd4j.zeros(150, 4)
+    val labels: INDArray = Nd4j.zeros(150, 3)
+
+    val labeledPoints = textFile
+    .zipWithIndex
+    .foreach { case (line, row) =>
+        val linesplit = line.split(",")
+
+        val feature = Nd4j.create(
+          Array(linesplit(columns("sepal-length")).toDouble,
+            linesplit(columns("sepal-width")).toDouble,
+            linesplit(columns("petal-length")).toDouble,
+            linesplit(columns("petal-width")).toDouble
+          )
         )
-      )
-      features.putRow(row.toInt, feature)
-      val label = Nd4j.create(
-        properties.get[String]("species") match {
-          case "Iris-setosa" => Array(1.0, 0.0, 0.0)
-          case "Iris-versicolor" => Array(0.0, 1.0, 0.0)
-          case "Iris-virginica" => Array(0.0, 0.0, 1.0)
-        }
-      )
-      labels.putRow(row.toInt, label)
+        features.putRow(row.toInt, feature)
+
+        val label = Nd4j.create(
+          linesplit(columns("species")) match {
+            case "Iris-setosa" => Array(1.0, 0.0, 0.0)
+            case "Iris-versicolor" => Array(0.0, 1.0, 0.0)
+            case "Iris-virginica" => Array(0.0, 0.0, 1.0)
+          }
+        )
+        labels.putRow(row.toInt, label)
+
     }
 
     val data = new DataSet(features, labels)
