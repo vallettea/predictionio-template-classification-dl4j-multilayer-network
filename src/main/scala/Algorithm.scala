@@ -51,6 +51,14 @@ class Algorithm(val ap: AlgorithmParams)
       .build()
     val dbn = new MultiLayerNetwork(conf)
     dbn.fit(data.data)
+
+    println("Evaluate model....")
+    val eval = new Evaluation()
+    val output = dbn.output(data.data.getFeatureMatrix())
+    eval.eval(data.data.getLabels(), output)
+    println(eval.stats())
+
+
     new Model(dbn)
   }
 
