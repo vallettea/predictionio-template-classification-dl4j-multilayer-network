@@ -49,49 +49,46 @@ class Algorithm(val ap: AlgorithmParams)
         val listenerFreq = iterations/5;
 
         println("Load data....");
-        val iter = new IrisDataSetIterator(batchSize, numSamples);
+        val iter = data.data
 
         println("Build model....");
         val conf = new NeuralNetConfiguration.Builder()
-                .seed(seed)
-                .iterations(iterations)
-                .learningRate(1e-3)
-                .l1(0.3).regularization(true).l2(1e-3)
-                .constrainGradientToUnitNorm(true)
-                .list(3)
-                .layer(0, new DenseLayer.Builder().nIn(numInputs).nOut(3)
-                        .activation("tanh")
-                        .weightInit(WeightInit.XAVIER)
-                        .build())
-                .layer(1, new DenseLayer.Builder().nIn(3).nOut(2)
-                        .activation("tanh")
-                        .weightInit(WeightInit.XAVIER)
-                        .build())
-                .layer(2, new OutputLayer.Builder(LossFunction.MCXENT)
-                        .weightInit(WeightInit.XAVIER)
-                        .activation("softmax")
-                        .nIn(2).nOut(outputNum).build())
-                .backprop(true).pretrain(false)
-                .build();
+          .seed(seed)
+          .iterations(iterations)
+          .learningRate(1e-3)
+          .l1(0.3).regularization(true).l2(1e-3)
+          .constrainGradientToUnitNorm(true)
+          .list(3)
+          .layer(0, new DenseLayer.Builder().nIn(numInputs).nOut(3)
+                  .activation("tanh")
+                  .weightInit(WeightInit.XAVIER)
+                  .build())
+          .layer(1, new DenseLayer.Builder().nIn(3).nOut(2)
+                  .activation("tanh")
+                  .weightInit(WeightInit.XAVIER)
+                  .build())
+          .layer(2, new OutputLayer.Builder(LossFunction.MCXENT)
+                  .weightInit(WeightInit.XAVIER)
+                  .activation("softmax")
+                  .nIn(2).nOut(outputNum).build())
+          .backprop(true).pretrain(false)
+          .build()
 
         val model = new MultiLayerNetwork(conf);
         model.init();
         model.setListeners(new ScoreIterationListener(listenerFreq));
 
         println("Train model....");
-        while(iter.hasNext()) {
-            val iris = iter.next();
-            println(iris)
-            iris.normalizeZeroMeanZeroUnitVariance();
-            model.fit(iris);
-        }
-        iter.reset();
+        iter.foreach(batch => {
+          model.fit(batch);
 
-        // println("Evaluate weights....");
-        // for(org.deeplearning4j.nn.api.Layer layer : model.getLayers()) {
-        //     val w = layer.getParam(DefaultParamInitializer.WEIGHT_KEY);
-        //     println("Weights: " + w);
+        })
+        // while(iter.hasNext()) {
+        //     val iris = iter.next();
+        //     iris.normalizeZeroMeanZeroUnitVariance();
+        //     model.fit(iris);
         // }
+
 
 
         println("Evaluate model....");

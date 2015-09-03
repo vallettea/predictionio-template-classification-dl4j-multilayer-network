@@ -3,6 +3,7 @@ package org.template.classification
 import io.prediction.controller.PPreparator
 import org.apache.spark.SparkContext
 import org.nd4j.linalg.dataset.DataSet
+import org.apache.spark.rdd.RDD
 
 class Preparator
   extends PPreparator[TrainingData, PreparedData] {
@@ -13,6 +14,6 @@ class Preparator
 }
 
 class PreparedData(
-  val data: DataSet
+  val data: RDD[DataSet]
 ) extends Serializable
 
