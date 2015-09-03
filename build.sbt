@@ -10,5 +10,14 @@ libraryDependencies ++= Seq(
   "io.prediction"    %% "core"          % pioVersion.value % "provided",
   "org.apache.spark" %% "spark-core"    % "1.2.0" % "provided",
   "org.apache.spark" %% "spark-mllib"   % "1.2.0" % "provided",
-  "org.nd4j" % "nd4j-jblas" % "0.0.3.5.5.2",
-  "org.deeplearning4j" % "deeplearning4j-core" % "0.0.3.3")
+  "org.nd4j" % "nd4j-jblas" % "0.4-rc2-SNAPSHOT",
+  "org.deeplearning4j" % "deeplearning4j-core" % "0.4-rc2.2-SNAPSHOT")
+
+
+mergeStrategy in assembly <<= (mergeStrategy in assembly) { mergeStrategy => {
+ case entry => {
+   val strategy = mergeStrategy(entry)
+   if (strategy == MergeStrategy.deduplicate) MergeStrategy.last
+   else strategy
+ }
+}}
