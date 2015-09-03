@@ -24,7 +24,6 @@ class DataSource(val dsp: DataSourceParams)
   def readTraining(sc: SparkContext): TrainingData = {
 
     // read from file
-    val batchSize = 150
     val textFile = sc.textFile("data/iris.data")
     val columns = "sepal-length,sepal-width,petal-length,petal-width,species".split(",").zipWithIndex.map{ case (name,index) => name -> index }.toMap
 
@@ -34,8 +33,8 @@ class DataSource(val dsp: DataSourceParams)
       .glom()
       .map(batch => {
 
-        val features: INDArray = Nd4j.zeros(batchSize, 4)
-        val labels: INDArray = Nd4j.zeros(batchSize, 3)
+        val features: INDArray = Nd4j.zeros(batch.length, 4)
+        val labels: INDArray = Nd4j.zeros(batch.length, 3)
 
         batch.zipWithIndex
         .foreach { case (line, row) =>
@@ -61,8 +60,8 @@ class DataSource(val dsp: DataSourceParams)
 
         }
       val data = new DataSet(features, labels)
-      data.normalizeZeroMeanZeroUnitVariance()
-      data.shuffle()
+      // data.normalizeZeroMeanZeroUnitVariance()
+      // data.shuffle()
       data
       })
     )
