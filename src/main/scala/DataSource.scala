@@ -31,7 +31,8 @@ class DataSource(val dsp: DataSourceParams)
 
 
     new TrainingData(textFile
-      .mapPartitions(batch => {
+      .glom()
+      .map(batch => {
 
         val features: INDArray = Nd4j.zeros(batchSize, 4)
         val labels: INDArray = Nd4j.zeros(batchSize, 3)
@@ -62,7 +63,7 @@ class DataSource(val dsp: DataSourceParams)
       val data = new DataSet(features, labels)
       data.normalizeZeroMeanZeroUnitVariance()
       data.shuffle()
-      Iterator(data)
+      data
       })
     )
   }
