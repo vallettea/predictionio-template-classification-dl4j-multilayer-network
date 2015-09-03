@@ -83,18 +83,11 @@ class Algorithm(val ap: AlgorithmParams)
           model.fit(batch);
 
         })
-        // while(iter.hasNext()) {
-        //     val iris = iter.next();
-        //     iris.normalizeZeroMeanZeroUnitVariance();
-        //     model.fit(iris);
-        // }
-
-
 
         println("Evaluate model....");
-        val eval = new Evaluation(outputNum);
-        val iterTest = new IrisDataSetIterator(numSamples, numSamples);
-        val test = iterTest.next();
+        val eval = new Evaluation(outputNum)
+        val iterTest = data.data
+        val test = iterTest.next()
         test.normalizeZeroMeanZeroUnitVariance();
         val output = model.output(test.getFeatureMatrix());
         eval.eval(test.getLabels(), output);
